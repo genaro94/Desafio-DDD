@@ -1,3 +1,6 @@
+import AddressChangedEvent from '../event/@shared/customer/address-changed-event';
+import CustomerCreatedEvent from '../event/@shared/customer/customer-created.event';
+import EventDispatcherInterface from '../event/@shared/event-dispatcher.interface';
 import { Address } from './address';
 
 export class Customer {
@@ -6,11 +9,20 @@ export class Customer {
     private _address!: Address;
     private _active: boolean = false;
     private _rewardPoints: number = 0;
+    private _eventDispatcher: EventDispatcherInterface;
 
-    constructor(id: string, name: string) {
+    constructor(id: string, name: string,
+        eventDispatcher?: EventDispatcherInterface) {
         this._name = name;
         this._id = id;
         this.validate();
+
+        this._eventDispatcher = eventDispatcher;
+
+        if (this._eventDispatcher) {
+            const customerCreatedEvent = new CustomerCreatedEvent(this);
+            this._eventDispatcher.notify(customerCreatedEvent);
+        }
     }
 
     get id() {
@@ -29,13 +41,15 @@ export class Customer {
         return this._address;
     }
 
-    set address(address: Address) {
-        this._address = address;
+    isActive() {
+        return this._active;
     }
 
     validate() {
+
         if (this._name.length === 0) {
             throw new Error("Name is required");
+
         }
 
         if (this._id.length === 0) {
@@ -54,15 +68,18 @@ export class Customer {
         this.validate();
     }
 
-    isActive() {
-        return this._active;
-    }
-
     activate() {
         if (this._address === undefined) {
             throw new Error("Address is mandatory to activate a customer");
         }
         this._active = true;
+    }
+
+    changeAddress(address: Address) {
+        this._address = address;
+        if (this._eventDispatcher) {
+            this._eventDispatcher.notify(new AddressChangedEvent(this));
+        }
     }
 
     deactivate() {
