@@ -11,7 +11,8 @@ A linguagem de programação para este desafio é TypeScript
 ## Como usar
 Após baixar o repositório executar:
 
-``npm install``
+```npm install```
+
 Após a instalação das dependências, executar:
 
-``npm test``
+```npm test```
